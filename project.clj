@@ -8,6 +8,7 @@
   :source-paths ["src/main/clojure" "src/test/clojure"]
 	:java-source-paths ["src/main/java" "src/test/java"]
   :junit ["src/test/java"]
+  :test-paths ["src/test/java" "src/test/clojure"]
   :main ^:skip-aot hosted-tic-tac-toe.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all} :dev {:dependencies [[junit/junit "4.11"]]}})
