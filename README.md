@@ -1,6 +1,6 @@
 # hosted-tic-tac-toe
 
- A [TicTacToe game] (https://github.com/catmclough/java-http-server) written in Clojure and hosted by a [Java Server] (https://github.com/catmclough/java-http-server).
+ A [TicTacToe game] (https://github.com/catmclough/clojure-tictactoe) written in Clojure and hosted by a [Java Server] (https://github.com/catmclough/java-http-server).
 
 ## Dependencies
 
@@ -21,6 +21,5 @@ Then run the jar
 ## Options
 
 Run the Java Server's JUnit tests.
-```
-lein junit
-```
+
+    $ lein junit
