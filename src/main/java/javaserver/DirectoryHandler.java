@@ -11,7 +11,7 @@ public class DirectoryHandler {
 	    if (directoryExists(path)) {
 	        publicDirectory = new File(path);
         } else {
-            System.out.println(directory + " does not exist.");
+            System.err.println(directory + " does not exist.");
             throw new DirectoryNotFoundException(directory);
         }
 	}
