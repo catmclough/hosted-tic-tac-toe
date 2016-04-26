@@ -19,4 +19,12 @@ public class Form {
 	public String[] getDataCollection() {
 		return this.dataCollection;
 	}
+
+  public String getHTML() {
+    String formHTML = HTMLContent.openHTMLAndBody("Game Board");
+    formHTML += "hi!";
+    formHTML += HTMLContent.closeBodyAndHTML();
+    System.out.println("HTML:\n" + formHTML);
+    return formHTML;
+  }
 }

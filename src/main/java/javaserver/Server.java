@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
-	protected ServerSocket serverSocket;
+	public ServerSocket serverSocket;
 	protected ExecutorService threadPool;
 	protected boolean isOn = true;
 	protected ClientWorker clientWorker;

@@ -35,7 +35,7 @@ public class ClientWorker implements Runnable {
 		}
 	}
 
-	private String getRequest(Reader reader) {
+	public String getRequest(Reader reader) {
 		String request = "";
 		try {
 			request = reader.readFromSocket();

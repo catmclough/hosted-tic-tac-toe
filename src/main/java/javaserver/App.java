@@ -7,21 +7,21 @@ public class App {
 	public static String name = "Cat's Java Server";
 	public static final int DEFAULT_PORT = 5000;
 	public static final String DEFAULT_PUBLIC_DIRECTORY = "public/";
-	protected static int port;
-	protected static Server server;
+	public static int port;
+	public static Server server;
 	public static RequestLog log = initializeLog();
 
 	public static void main(String[] args) throws IOException {
 		setUpServer(args);
 		runServer(server);
 	}
-	
+
 	private static RequestLog initializeLog() {
 	    return new RequestLog();
 	}
 
-	protected static void setUpServer(String[] args) throws IOException {
-	    handleArgs(args);
+	public static void setUpServer(String[] args) throws IOException {
+    handleArgs(args);
 		server = new Server(new ServerSocket(port));
 	}
 

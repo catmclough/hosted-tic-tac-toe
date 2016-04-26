@@ -6,7 +6,7 @@ import javaserver.Response;
 
 public class RedirectResponder implements Responder {
 	private String[] supportedMethods;
-	private String defaultRedirectLocation = "http://localhost:5000/";
+	private String defaultRedirectLocation = "/gameboard";
 	private String redirectHeader = "Location: ";
 
 	public RedirectResponder(String[] supportedMethods) {

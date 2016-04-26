@@ -34,7 +34,7 @@ public class FormResponder implements Responder {
 		if (requestChangesData(request)) {
 			form = new Form(request.getData());
 		}
-		return form.getData();
+		return form.getHTML();
 	}
 
 	private boolean requestChangesData(Request request) {

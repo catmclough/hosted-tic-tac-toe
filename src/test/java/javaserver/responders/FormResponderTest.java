@@ -19,7 +19,7 @@ public class FormResponderTest {
 	private Request invalidRequest = RequestParser.createRequest("PATCH " + formRoute);
 
 	private String[] supportedFormMethods = new String[] {"GET", "POST", "PUT", "DELETE"};
-	
+
 	private String mockData = "XOXOXOXO";
 	private Form mockForm = new Form(mockData);
 	private FormResponder responder = new FormResponder(supportedFormMethods, mockForm);
