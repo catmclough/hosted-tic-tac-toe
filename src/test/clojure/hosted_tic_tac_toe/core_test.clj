@@ -3,27 +3,14 @@
             [hosted-tic-tac-toe.core :refer :all]
             [tictactoe.board :as board]))
 
-(import [javaserver App Form RequestParser])
+(import '(http_messages Request$RequestBuilder)
+        '(javaserver Server))
 
-(deftest imports-tictactoe
-  (testing "Successfully calls upon functions in the tictactoe namespace"
-    (is (= (vec(range board/board-size)) (board/make-board)))))
+(deftest sets-chosen-port
+  (testing "Sets up server with specified port arg"
+    (is (= 9090 (getPortChoice (into-array String '("-P" "9090")))))))
 
-;(deftest sets-default-port
-  ;(testing "Running hosted-tic-tac-toe.core sets up server with port args"
-    ;(do
-      ;(with-out-str (-main))
-        ;(is (= (App/port) 5000)))))
+(deftest sets-default-port
+  (testing "Sets up server with default port (5000)"
+    (is (= 5000 (getPortChoice (into-array String '()))))))
 
-;(deftest sets-chosen-port
-  ;(testing "Running hosted-tic-tac-toe.core sets up server with port args"
-    ;(do
-      ;(with-out-str (-main "-P" "8888"))
-        ;(is (= (App/port) 8888)))))
-
-(deftest redirects-user-to-game-board
-  (testing "GET request to root directory redirects browser to /game-board"
-    (do
-      (with-out-str (-main)
-        (let [request (RequestParser/createRequest  "GET /")]
-          (is (= "/" (.getURI request))))))))
