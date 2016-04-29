@@ -6,10 +6,6 @@
 
 (import '(responders RedirectResponder))
 
-(defn getRoutes []
+(defn get-routes []
     (java.util.HashMap. {"/" (RedirectResponder. (into-array String ["GET"]) "/gameboard")
-                         "/gameboard" (gameboard-responder/new-gameboard-responder ["GET"])
-						}))
-
-;(Form. (into-array Integer/TYPE (map int (board/make-board)))))}))
-
+                         "/gameboard" (gameboard-responder/new-gameboard-responder)}))

@@ -7,15 +7,15 @@
         '(text_parsers ArgParser)
         '(factories ServerCreator))
 
-(defn getPortChoice [args]
+(defn get-port-choice [args]
   (ArgParser/getPortChoice (into-array String args) 5000))
 
 (defn -main
   [& args]
   (do
     (console/welcome-player)
-    (let [choice (getPortChoice args)]
+    (let [choice (get-port-choice args)]
       (println (str "Server running on port " choice))
-      (let [router (Router. (routes/getRoutes))]
+      (let [router (Router. (routes/get-routes))]
         (let [server (.createServer (ServerCreator.) choice router)]
           (.run server))))))

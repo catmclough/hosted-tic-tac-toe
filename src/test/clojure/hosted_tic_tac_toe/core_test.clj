@@ -8,9 +8,8 @@
 
 (deftest sets-chosen-port
   (testing "Sets up server with specified port arg"
-    (is (= 9090 (getPortChoice (into-array String '("-P" "9090")))))))
+    (is (= 9090 (get-port-choice (into-array String '("-P" "9090")))))))
 
 (deftest sets-default-port
   (testing "Sets up server with default port (5000)"
-    (is (= 5000 (getPortChoice (into-array String '()))))))
-
+    (is (= 5000 (get-port-choice (into-array String '()))))))
