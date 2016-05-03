@@ -3,13 +3,13 @@
             [hosted-tic-tac-toe.core :refer :all]
             [tictactoe.board :as board]))
 
-(import [javaserver Form])
+(import '(http_messages Request$RequestBuilder)
+        '(javaserver Server))
 
-(deftest imports-tictactoe
-  (testing "Successfully calls upon functions in the tictactoe namespace."
-    (is (=  (vec(range board/board-size)) (board/make-board)))))
+(deftest sets-chosen-port
+  (testing "Sets up server with specified port arg"
+    (is (= 9090 (get-port-choice (into-array String '("-P" "9090")))))))
 
-(deftest imports-java-server
-  (testing "Successfully calls upon functions in the Java Server."
-    (let [form (new Form "some data")]
-      (is (= (.getData form) "some data")))))
+(deftest sets-default-port
+  (testing "Sets up server with default port (5000)"
+    (is (= 5000 (get-port-choice (into-array String '()))))))
