@@ -1,6 +1,7 @@
 (ns hosted-tic-tac-toe.gameboard-responder-test
   (:require [clojure.test :refer :all]
             [hosted-tic-tac-toe.gameboard-responder :as responder]
+            [hosted-tic-tac-toe.gameboard-html :as gameboard-html]
             [tictactoe.board :as board]))
 
 (import '(http_messages Response Request Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent))
@@ -9,12 +10,18 @@
 
 (def get-request (.build (Request$RequestBuilder. (str "GET /gameboard"))))
 
-(def invalid-get-request (.build (Request$RequestBuilder. "POST /gameboard")))
+(def invalid-get-request (.build (Request$RequestBuilder. "HEAD /gameboard")))
 
-(def put-data (str "[0 1 2 3 4 5 6 7 8]" (Request/newLine) "1" (Request/newLine) "X"))
+(def current-board ["X" 1 2 3 4 5 6 7 8])
 
-(def valid-put-request
-  (.build (Request$RequestBuilder. (str "PUT /gameboard" (Request/newLine) (Request/newLine) put-data))))
+(def current-board-data "X12345678")
+
+(def move-data (str "board=" current-board-data "&choice=1&marker=O"))
+
+(def updated-board ["X" "O" 2 3 4 5 6 7 8])
+
+(def valid-post-request
+  (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) move-data))))
 
 (defn response-body [request]
   (.getBody (responder/get-board-response request)))
@@ -37,20 +44,20 @@
                   (.contains (response-body get-request) (HTMLContent/closeBodyAndHTML))))))
 
 (deftest get-gameboard-returns-empty-board
-  (is (true? (.contains (response-body get-request) (str (board/make-board))))))
+  (is (true? (.contains (response-body get-request) (gameboard-html/formatted-board (board/make-board))))))
 
 (deftest invalid-get-request-gets-empty-response-body
   (is (empty? (response-body invalid-get-request))))
 
-(deftest valid-put-response-code
-  (is (= (.getStatusLine HTTPStatus/OK) (.getStatusLine (responder/get-board-response valid-put-request)))))
+(deftest valid-post-response-code
+  (is (= (.getStatusLine HTTPStatus/OK) (.getStatusLine (responder/get-board-response valid-post-request)))))
 
-(deftest put-response-has-html-header
-  (is (= (.getLine (get (.getHeaders (responder/get-board-response valid-put-request)) 0))
+(deftest post-response-html-header
+  (is (= (.getLine (get (.getHeaders (responder/get-board-response valid-post-request)) 0))
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
 
 (deftest parses-and-formats-request-board-for-evalueation
-  (is (= (vec '("X" 1 2 3 4 5 6 7 8)) (responder/parse-board-data "[X 1 2 3 4 5 6 7 8]"))))
+  (is (= (responder/parse-board-data current-board-data) current-board)))
 
-(deftest valid-put-updates-board
-  (is (true? (.contains (response-body valid-put-request) (str updated-board)))))
+(deftest valid-post-updates-board
+  (is (true? (.contains (response-body valid-post-request) (gameboard-html/formatted-board updated-board)))))

@@ -1,14 +1,17 @@
 (ns hosted-tic-tac-toe.gameboard-responder
-  (:require [tictactoe.board :as board]))
+  (:require [clojure.string :as string]
+            [tictactoe.board :as board]
+			[hosted-tic-tac-toe.gameboard-html :as gameboard-html]))
 
 (import '(responders Responder)
         '(http_messages HTTPStatus HTMLContent Request
                         Response$ResponseBuilder Header$HeaderBuilder
-                        Header ResponseHeader))
+                        Header ResponseHeader)
+        '(decoders UTF8Decoder))
 
 (def page-name "Game Board")
 
-(def supported-methods ["GET" "PUT"])
+(def supported-methods ["GET" "POST"])
 
 (defn- request-is-supported [request]
   (not (nil? (some #{(.getMethod request)} supported-methods))))
@@ -27,23 +30,24 @@
       board))
 
 (defn parse-board-data [board-string]
-  (let [symbolic-board (map read-string (clojure.string/split (clojure.string/replace board-string #"\[|\]" "") #" "))]
+  (let [symbolic-board (map read-string (clojure.string/split board-string #""))]
     (vec (map #(if (not (number? %)) (name %) %) symbolic-board))))
 
 (defn- update-board [request-data]
-  (let [lines (clojure.string/split request-data #"\r\n")]
-    (let [board-string (first lines)]
+  (let [data-parts (string/split (UTF8Decoder/decode request-data) #"&")]
+    (let [board-string (get (string/split (get data-parts 0) #"=") 1)]
       (let [current-board (parse-board-data board-string)]
-        (let [choice (read-string (second lines))]
-          (board/fill-space choice (last lines) current-board))))))
+        (let [choice (read-string (get (string/split (get data-parts 1) #"=") 1))]
+          (let [marker (get (string/split (get data-parts 2) #"=") 1)]
+            (board/fill-space choice marker current-board)))))))
 
 (defn- get-body [request]
   (if (request-is-supported request)
     (cond
       (= (.getMethod request) "GET")
-        (str (HTMLContent/openHTMLAndBody page-name) (board/make-board) (HTMLContent/closeBodyAndHTML))
-      (= (.getMethod request) "PUT")
-        (str (HTMLContent/openHTMLAndBody page-name) (update-board (.getData request)) (HTMLContent/closeBodyAndHTML))
+        (str (HTMLContent/openHTMLAndBody page-name) (gameboard-html/formatted-board (board/make-board)) (HTMLContent/closeBodyAndHTML))
+      (= (.getMethod request) "POST")
+        (str (HTMLContent/openHTMLAndBody page-name) (gameboard-html/formatted-board (update-board (.getData request))) (HTMLContent/closeBodyAndHTML))
       :else "")
     ""))
 
