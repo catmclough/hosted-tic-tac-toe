@@ -18,4 +18,3 @@
 
 (deftest gameboard-points-to-gameboard-responder
   (is (= (type (gameboard-responder/new-gameboard-responder)) (type (get (routes/get-routes) "/gameboard")))))
-
