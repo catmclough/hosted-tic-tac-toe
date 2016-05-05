@@ -12,26 +12,32 @@
 
 (use-fixtures :once stub-output)
 
-(def test-server (atom {:port nil}))
+(def mock-server (atom {:port nil}))
 
-(defn update-server-port [new-port]
-  (swap! test-server
-         (fn [server-state]
-           (merge server-state {:port new-port}))))
+(def mock-router (atom {:port nil}))
 
-(defn mock-server [f]
-  (with-redefs [create-server (fn [port router] (update-server-port port))]
+(defn update-atom [atom-object new-data]
+  (swap! atom-object
+         (fn [atom-state]
+           (merge atom-state new-data))))
+
+(defn create-mock-server [f]
+  (with-redefs [get-server (fn [chosen-port router] (update-atom mock-server {:port chosen-port}))]
     (with-redefs [run-server (fn [server] nil)]
       (f)
-      (reset! test-server {:port nil}))))
+      (reset! mock-server {:port nil}))))
 
-(use-fixtures :each mock-server)
+(use-fixtures :each create-mock-server)
 
 (deftest creates-server-with-given-port
   (-main "-P" "9090")
-  (is (= (:port @test-server) 9090)))
+  (is (= (:port @mock-server) 9090)))
 
 (deftest creates-server-with-default-port
   (-main)
-  (is (= (:port @test-server) 5000)))
+  (is (= (:port @mock-server) 5000)))
 
+(deftest creates-router-with-ttt-routes
+  (with-redefs [get-router (fn [app-routes] (update-atom mock-router {:routes app-routes}))]
+    (-main)
+    (is (= (keys (:routes @mock-router)) (keys (ttt-routes/get-routes))))))

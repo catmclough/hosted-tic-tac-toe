@@ -1,7 +1,11 @@
 (ns hosted-tic-tac-toe.gameboard-html
   (require [tictactoe.board :as board]))
 
-(defn- get-button [board space marker]
+(import '(http_messages HTMLContent))
+
+(def page-name "Game Board")
+
+(defn get-button [board space marker]
   (str "<form action=\"/gameboard\" method=\"post\">
           <input type=\"hidden\" name=\"board\" value=\"" board "\"/>
           <input type=\"hidden\" name=\"choice\" value=\"" space "\"/>
@@ -14,9 +18,8 @@
     (get-button (apply str gameboard) space (board/active-player gameboard))
     (get gameboard space)))
 
-(defn formatted-board [board]
-  (str
-    "<table style=\"width:25%\">
+(defn- get-ttt-board [board]
+    (str "<table style=\"width:25%\">
     <caption>TicTacToe Board</caption>
     <tr>
       <td>" (get-board-space board 0) "</td>
@@ -34,3 +37,9 @@
       <td>" (get-board-space board 8) "</td>
     </tr>
   </table>"))
+
+(defn get-page [board]
+  (str
+    (HTMLContent/openHTMLAndBody page-name)
+    (get-ttt-board board)
+    (HTMLContent/closeBodyAndHTML)))
