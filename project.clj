@@ -9,5 +9,4 @@
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
   :main ^:skip-aot hosted-tic-tac-toe.core
-  :target-path "target/%s"
-  :repositories {"local" ~(str (.toURI (java.io.File. "maven_repository")))})
+  :target-path "target/%s")

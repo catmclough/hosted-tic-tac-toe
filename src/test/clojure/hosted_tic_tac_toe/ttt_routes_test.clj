@@ -1,7 +1,8 @@
 (ns hosted-tic-tac-toe.ttt-routes-test
   (:require [clojure.test :refer :all]
     [hosted-tic-tac-toe.ttt-routes :as routes]
-    [hosted-tic-tac-toe.gameboard-responder :as gameboard-responder]))
+    [hosted-tic-tac-toe.gameboard-responder :as gameboard-responder]
+    [hosted-tic-tac-toe.end-game-responder :as end-game-responder]))
 
 (import '(responders RedirectResponder)
         '(http_messages Request$RequestBuilder ResponseHeader))
@@ -19,3 +20,5 @@
 (deftest gameboard-points-to-gameboard-responder
   (is (= (type (gameboard-responder/new-gameboard-responder)) (type (get (routes/get-routes) "/gameboard")))))
 
+(deftest game-over-points-to-endgame-responder
+  (is (= (type (end-game-responder/new-end-game-responder)) (type (get (routes/get-routes) "/game-over")))))
