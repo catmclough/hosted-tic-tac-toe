@@ -6,17 +6,27 @@
 (import '(responders Responder)
         '(http_messages HTTPStatus HTMLContent Request
                         Response$ResponseBuilder Header$HeaderBuilder
-                        Header ResponseHeader)
-        )
+                        Header ResponseHeader))
 
 (def supported-methods ["GET" "POST"])
 
 (defn- request-is-supported [request]
   (not (nil? (some #{(.getMethod request)} supported-methods))))
 
-(defn- get-headers []
-  (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) (HTMLContent/contentType) ";")))]
-    (into-array Header [content-type])))
+(defn- get-status-line [gameboard]
+  (if (board/game-over? gameboard)
+    (.getStatusLine (HTTPStatus/FOUND))
+    (.getStatusLine (HTTPStatus/OK))))
+
+(defn game-over-route [gameboard]
+  (str "/game-over?winner=" (board/winner gameboard)))
+
+(defn- get-headers [gameboard]
+  (if (board/game-over? gameboard)
+    (let [redirect-header (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/REDIRECT)) (game-over-route gameboard))))]
+        (into-array Header [redirect-header]))
+    (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) (HTMLContent/contentType) ";")))]
+      (into-array Header [content-type]))))
 
 (defn- get-board-data [request]
   (let [board (.getData request)]
@@ -28,18 +38,19 @@
       (let [current-board (data-parser/get-board request-data)]
         (board/fill-space choice marker current-board)))))
 
-(defn- get-body [request]
+(defn- get-board [request]
   (cond
     (= (.getMethod request) "GET")
-      (gameboard-html/get-page (board/make-board))
+      (board/make-board)
     (= (.getMethod request) "POST")
-      (gameboard-html/get-page (update-board (.getData request)))))
+      (update-board (.getData request))))
 
 (defn- get-board-response [request]
   (if (not (request-is-supported request))
     (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))
-    (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
-      (.getStatusLine HTTPStatus/OK)) (get-headers)) (get-body request)))))
+    (let [gameboard (get-board request)]
+      (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
+        (get-status-line gameboard)) (get-headers gameboard)) (gameboard-html/get-page gameboard))))))
 
 (defn new-gameboard-responder []
   (reify

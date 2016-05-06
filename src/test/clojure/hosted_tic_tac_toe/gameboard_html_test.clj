@@ -4,9 +4,8 @@
 
 (def gameboard [0 "X" 2 "O" 4 5 6 7 8])
 
-(deftest board-contains-marker-if-spot-is-taken
-  (is (true? (and (.contains (get-page gameboard) "<td>X</td>")
-                  (.contains (get-page gameboard) "<td>O</td>")))))
+(deftest board-displays-contents-of-filled-spots
+  (is (true? (.contains (get-page gameboard) (get-filled-space gameboard 1)))))
 
-(deftest unfilled-spots-contain-form-with-post-method
+(deftest unfilled-spots-contain-button
   (is (true? (.contains (get-page gameboard) (get-button (apply str gameboard) 0 "X")))))
