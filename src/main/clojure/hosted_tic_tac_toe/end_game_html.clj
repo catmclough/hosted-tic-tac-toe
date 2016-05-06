@@ -9,7 +9,7 @@
 (def tie-game-text "<h3>Cat's Game :(</h3>")
 
 (defn- winner-info [winner]
-  (if (nil? winner)
+  (if (= "nil" winner)
     tie-game-text
     (winner-text winner)))
 

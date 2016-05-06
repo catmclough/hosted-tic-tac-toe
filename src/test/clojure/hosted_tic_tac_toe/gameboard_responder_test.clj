@@ -4,7 +4,8 @@
             [hosted-tic-tac-toe.gameboard-html :as gameboard-html]
             [tictactoe.board :as board]))
 
-(import '(http_messages Response Request Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent))
+(import '(http_messages Response Request Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent)
+        '(java.net URLEncoder))
 
 (def responder (gameboard-responder/new-gameboard-responder))
 
@@ -58,11 +59,11 @@
   (let [winning-move (str "board=XX2O45O78&choice=2&marker=X")]
     (let [end-game-request (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) winning-move)))]
       (is (= (.getLine (get (.getHeaders (.getResponse responder end-game-request)) 0))
-         (str (.getKeyword ResponseHeader/REDIRECT) "/game-over?winner=X"))))))
+         (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode "?winner=X" "UTF-8")))))))
 
-(deftest winner-param-is-empty-if-game-was-tie
+(deftest winner-param-is-nil-if-game-was-tie
   (let [tying-move (str "board=OXO3XOXOX&choice=3&marker=X")]
     (let [tie-game-request (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) tying-move)))]
       (is (= (.getLine (get (.getHeaders (.getResponse responder tie-game-request)) 0))
-             (str (.getKeyword ResponseHeader/REDIRECT) "/game-over?winner="))))))
+             (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode "?winner=nil" "UTF-8")))))))
 

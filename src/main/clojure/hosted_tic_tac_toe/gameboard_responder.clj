@@ -6,7 +6,8 @@
 (import '(responders Responder)
         '(http_messages HTTPStatus HTMLContent Request
                         Response$ResponseBuilder Header$HeaderBuilder
-                        Header ResponseHeader))
+                        Header ResponseHeader)
+        '(java.net URLEncoder))
 
 (def supported-methods ["GET" "POST"])
 
@@ -19,7 +20,10 @@
     (.getStatusLine (HTTPStatus/OK))))
 
 (defn game-over-route [gameboard]
-  (str "/game-over?winner=" (board/winner gameboard)))
+  (let [winner (board/winner gameboard)]
+    (if (nil? winner)
+      (str "/game-over" (URLEncoder/encode "?winner=nil" "UTF-8"))
+      (str "/game-over" (URLEncoder/encode (str "?winner=" (board/winner gameboard)) "UTF-8")))))
 
 (defn- get-headers [gameboard]
   (if (board/game-over? gameboard)

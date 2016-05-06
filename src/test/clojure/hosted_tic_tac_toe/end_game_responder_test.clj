@@ -3,11 +3,12 @@
            [hosted-tic-tac-toe.end-game-responder :as responder]
            [hosted-tic-tac-toe.end-game-html :as html]))
 
-(import '(http_messages Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent Request))
+(import '(http_messages Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent Request)
+        '(java.net URLEncoder))
 
 (def end-game-responder (responder/new-end-game-responder))
 
-(def x-winner-end-game-request (.build (Request$RequestBuilder. (str "GET /game-over?winner=X"))))
+(def x-winner-end-game-request (.build (Request$RequestBuilder. (str "GET /game-over?" (URLEncoder/encode "winner=X")))))
 
 (def unallowed-request (.build (Request$RequestBuilder. "POST /game-over")))
 

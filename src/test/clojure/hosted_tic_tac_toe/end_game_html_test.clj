@@ -3,7 +3,7 @@
            [hosted-tic-tac-toe.end-game-html :as html]))
 
 (deftest tie-game-end-screen-info
-  (is (true? (.contains (html/get-page nil) html/tie-game-text))))
+  (is (true? (.contains (html/get-page "nil") html/tie-game-text))))
 
 (deftest end-screen-has-winner-info
   (is (true? (.contains (html/get-page "X") (html/winner-text "X")))))

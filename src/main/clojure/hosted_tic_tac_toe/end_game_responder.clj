@@ -16,10 +16,8 @@
     (into-array Header [content-type])))
 
 (defn- get-winner-from-params [request]
-  (let [winner (clojure.string/trim ((clojure.string/split (get (ParameterParser/getDecodedParams (str (.getMethod request) " " (.getURI request))) 0) #"=") 1))]
-    (if (clojure.string/blank? winner)
-      nil
-      winner)))
+  (let [winner ((clojure.string/split (get (ParameterParser/getDecodedParams (str (.getMethod request) " " (.getURI request))) 0) #"= ") 1)]
+      winner))
 
 (defn- get-response-body [request]
   (end-game-html/get-page (get-winner-from-params request)))
