@@ -23,10 +23,13 @@
   (end-game-html/get-page (get-winner-from-params request)))
 
 (defn- get-game-over-response [request]
-  (if (not (request-is-supported request))
-    (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))
-    (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
-        (.getStatusLine HTTPStatus/OK)) (get-response-headers)) (get-response-body request)))))
+  (try
+    (if (not (request-is-supported request))
+      (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))
+      (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
+          (.getStatusLine HTTPStatus/OK)) (get-response-headers)) (get-response-body request))))
+    (catch Exception e
+      (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/NOT_FOUND))))))
 
 (defn new-end-game-responder []
   (reify

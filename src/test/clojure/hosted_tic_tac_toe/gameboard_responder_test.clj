@@ -16,6 +16,8 @@
 
 (def unallowed-request (.build (Request$RequestBuilder. "HEAD /gameboard")))
 
+(def request-with-error (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) "unrecognizable data"))))
+
 (def current-board-data "012345678")
 
 (def move-data (str "board=" current-board-data "&choice=0&marker=X"))
@@ -31,6 +33,9 @@
 
 (deftest gets-unallowed-response-status
   (is (= (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED) (.getStatusLine (.getResponse responder unallowed-request)))))
+
+(deftest catches-exceptions-and-returns-response
+  (is (= (.getStatusLine HTTPStatus/NOT_FOUND) (.getStatusLine (.getResponse responder request-with-error)))))
 
 (deftest response-has-html-header
   (is (= (.getLine (get (.getHeaders get-request-response) 0))

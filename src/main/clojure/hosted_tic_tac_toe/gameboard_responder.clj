@@ -12,6 +12,8 @@
 
 (def supported-methods ["GET" "POST"])
 
+(def ai-marker "O")
+
 (defn- request-is-supported [request]
   (not (nil? (some #{(.getMethod request)} supported-methods))))
 
@@ -50,16 +52,19 @@
     (= (.getMethod request) "POST")
       (let [player-choice-board (update-board (.getData request))]
         (if (not (board/game-over? player-choice-board))
-          (let [ai-choice (ai/choose-move player-choice-board "O")]
-            (board/fill-space ai-choice "O" player-choice-board))
+          (let [ai-choice (ai/choose-move player-choice-board ai-marker)]
+            (board/fill-space ai-choice ai-marker player-choice-board))
         player-choice-board))))
 
 (defn- get-board-response [request]
-  (if (not (request-is-supported request))
-    (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))
-    (let [gameboard (get-board request)]
-      (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
-        (get-status-line gameboard)) (get-headers gameboard)) (gameboard-html/get-page gameboard))))))
+  (try
+    (if (not (request-is-supported request))
+      (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))
+      (let [gameboard (get-board request)]
+        (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
+          (get-status-line gameboard)) (get-headers gameboard)) (gameboard-html/get-page gameboard)))))
+    (catch Exception e
+      (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine (HTTPStatus/NOT_FOUND)))))))
 
 (defn new-gameboard-responder []
   (reify

@@ -12,11 +12,16 @@
 
 (def unallowed-request (.build (Request$RequestBuilder. "POST /game-over")))
 
+(def invalid-request (.build (Request$RequestBuilder. "GET /game-over?winner=")))
+
 (deftest valid-end-game-response-status
   (is (= (.getStatusLine (.getResponse end-game-responder x-winner-end-game-request)) (.getStatusLine HTTPStatus/OK))))
 
-(deftest invalid-end-game-response-status
+(deftest invalid-method-response-status
     (is (= (.getStatusLine (.getResponse end-game-responder unallowed-request)) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED))))
+
+(deftest catches-errors-and-responds
+    (is (= (.getStatusLine (.getResponse end-game-responder invalid-request)) (.getStatusLine HTTPStatus/NOT_FOUND))))
 
 (deftest end-game-response-has-html-content-header
   (is (= (.getLine (get (.getHeaders (.getResponse end-game-responder x-winner-end-game-request)) 0))
