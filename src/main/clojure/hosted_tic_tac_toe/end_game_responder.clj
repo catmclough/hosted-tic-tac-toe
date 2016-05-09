@@ -3,7 +3,8 @@
 
 (import '(responders Responder)
         '(http_messages Response$ResponseBuilder Header$HeaderBuilder
-                        ResponseHeader HTMLContent Header HTTPStatus))
+                        ResponseHeader HTMLContent Header HTTPStatus)
+        '(text_parsers ParameterParser))
 
 (def supported-methods ["GET"])
 
@@ -14,8 +15,12 @@
   (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) (HTMLContent/contentType) ";")))]
     (into-array Header [content-type])))
 
+(defn- get-winner-from-params [request]
+  (let [winner ((clojure.string/split (get (ParameterParser/getDecodedParams (str (.getMethod request) " " (.getURI request))) 0) #"= ") 1)]
+      winner))
+
 (defn- get-response-body [request]
-    (end-game-html/get-page))
+  (end-game-html/get-page (get-winner-from-params request)))
 
 (defn- get-game-over-response [request]
   (if (not (request-is-supported request))
@@ -27,4 +32,3 @@
   (reify
     Responder
       (getResponse [this request] (get-game-over-response request))))
-
