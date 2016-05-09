@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [hosted-tic-tac-toe.gameboard-responder :as gameboard-responder]
             [hosted-tic-tac-toe.gameboard-html :as gameboard-html]
-            [tictactoe.board :as board]))
+            [tictactoe.board :as board]
+            ))
 
 (import '(http_messages Response Request Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent)
         '(java.net URLEncoder))
@@ -15,9 +16,9 @@
 
 (def unallowed-request (.build (Request$RequestBuilder. "HEAD /gameboard")))
 
-(def current-board-data "X12345678")
+(def current-board-data "012345678")
 
-(def move-data (str "board=" current-board-data "&choice=1&marker=O"))
+(def move-data (str "board=" current-board-data "&choice=0&marker=X"))
 
 (def valid-post-request
   (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) move-data))))
@@ -52,8 +53,8 @@
   (is (= (.getLine (get (.getHeaders valid-post-request-response) 0))
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
 
-(deftest valid-post-updates-board
-  (is (true? (.contains (.getBody valid-post-request-response) (gameboard-html/get-page ["X" "O" 2 3 4 5 6 7 8])))))
+(deftest valid-user-post-updates-board-with-user-and-ai-choice
+  (is (true? (.contains (.getBody valid-post-request-response) (gameboard-html/get-page ["X" 1 2 3 "O" 5 6 7 8])))))
 
 (deftest redirects-user-to-game-over-route-with-winner-params
   (let [winning-move (str "board=XX2O45O78&choice=2&marker=X")]
@@ -66,4 +67,3 @@
     (let [tie-game-request (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) tying-move)))]
       (is (= (.getLine (get (.getHeaders (.getResponse responder tie-game-request)) 0))
              (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode "?winner=nil" "UTF-8")))))))
-

@@ -1,5 +1,6 @@
 (ns hosted-tic-tac-toe.gameboard-responder
   (:require [tictactoe.board :as board]
+            [tictactoe.ai :as ai]
 			[hosted-tic-tac-toe.gameboard-html :as gameboard-html]
             [hosted-tic-tac-toe.board-data-parser :as data-parser]))
 
@@ -47,7 +48,11 @@
     (= (.getMethod request) "GET")
       (board/make-board)
     (= (.getMethod request) "POST")
-      (update-board (.getData request))))
+      (let [player-choice-board (update-board (.getData request))]
+        (if (not (board/game-over? player-choice-board))
+          (let [ai-choice (ai/choose-move player-choice-board "O")]
+            (board/fill-space ai-choice "O" player-choice-board))
+        player-choice-board))))
 
 (defn- get-board-response [request]
   (if (not (request-is-supported request))
