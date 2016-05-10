@@ -5,6 +5,8 @@
 
 (def page-name "Game Board")
 
+(def content-type "text/html")
+
 (defn get-button [board space marker]
   (str "<form action=\"/gameboard\" method=\"post\">
           <input type=\"hidden\" name=\"board\" value=\"" board "\"/>

@@ -1,9 +1,9 @@
 (ns hosted-tic-tac-toe.end-game-responder
-  (require [hosted-tic-tac-toe.end-game-html :as end-game-html]))
+  (require [hosted-tic-tac-toe.end-game-html :as end-game-view]))
 
 (import '(responders Responder)
         '(http_messages Response$ResponseBuilder Header$HeaderBuilder
-                        ResponseHeader HTMLContent Header HTTPStatus)
+                        ResponseHeader Header HTTPStatus)
         '(text_parsers ParameterParser))
 
 (def supported-methods ["GET"])
@@ -12,7 +12,7 @@
   (not (nil? (some #{(.getMethod request)} supported-methods))))
 
 (defn- get-response-headers []
-  (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) (HTMLContent/contentType) ";")))]
+  (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) end-game-view/content-type ";")))]
     (into-array Header [content-type])))
 
 (defn- get-winner-from-params [request]
@@ -20,7 +20,7 @@
       winner))
 
 (defn- get-response-body [request]
-  (end-game-html/get-page (get-winner-from-params request)))
+  (end-game-view/get-page (get-winner-from-params request)))
 
 (defn- get-game-over-response [request]
   (try

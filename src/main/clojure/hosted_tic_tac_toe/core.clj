@@ -27,7 +27,4 @@
     (println (str "Server running on port " port-choice))
     (let [router (get-router (routes/get-routes))]
       (let [server (get-server port-choice router)]
-        (try
-          (run-server server)
-          (catch Exception e (str "Caught exception while running server: " (.getMessage e)))
-          (finally (if (= (type server) Server) (.shutDown server)))))))) ;test this by mocking server creator and returning bad server and no exceptions are thrown
+        (run-server server)))))

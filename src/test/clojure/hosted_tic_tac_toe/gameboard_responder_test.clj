@@ -1,7 +1,7 @@
 (ns hosted-tic-tac-toe.gameboard-responder-test
   (:require [clojure.test :refer :all]
             [hosted-tic-tac-toe.gameboard-responder :as gameboard-responder]
-            [hosted-tic-tac-toe.gameboard-html :as gameboard-html]
+            [hosted-tic-tac-toe.gameboard-html :as gameboard-view]
             [tictactoe.board :as board]
             ))
 
@@ -37,16 +37,16 @@
 (deftest catches-exceptions-and-returns-response
   (is (= (.getStatusLine HTTPStatus/NOT_FOUND) (.getStatusLine (.getResponse responder request-with-error)))))
 
-(deftest response-has-html-header
+(deftest response-has-content-type-header
   (is (= (.getLine (get (.getHeaders get-request-response) 0))
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
 
 (deftest valid-get-request-returns-html-template
-  (is (true? (and (.contains (.getBody get-request-response) (HTMLContent/openHTMLAndBody gameboard-html/page-name))
+  (is (true? (and (.contains (.getBody get-request-response) (HTMLContent/openHTMLAndBody gameboard-view/page-name))
                   (.contains (.getBody get-request-response) (HTMLContent/closeBodyAndHTML))))))
 
 (deftest get-gameboard-returns-empty-board
-  (is (true? (.contains (.getBody get-request-response) (gameboard-html/get-page (board/make-board))))))
+  (is (true? (.contains (.getBody get-request-response) (gameboard-view/get-page (board/make-board))))))
 
 (deftest invalid-get-request-gets-empty-response-body
   (is (empty? (.getBody (.getResponse responder unallowed-request)))))
@@ -59,7 +59,7 @@
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
 
 (deftest valid-user-post-updates-board-with-user-and-ai-choice
-  (is (true? (.contains (.getBody valid-post-request-response) (gameboard-html/get-page ["X" 1 2 3 "O" 5 6 7 8])))))
+  (is (true? (.contains (.getBody valid-post-request-response) (gameboard-view/get-page ["X" 1 2 3 "O" 5 6 7 8])))))
 
 (deftest redirects-user-to-game-over-route-with-winner-params
   (let [winning-move (str "board=XX2O45O78&choice=2&marker=X")]
