@@ -2,6 +2,8 @@
 
 (import '(http_messages HTMLContent))
 
+(def content-type "text/html")
+
 (def page-title "Game Over")
 
 (defn winner-text [winner] (str "<h3>Winner: Player " winner "</h3>"))

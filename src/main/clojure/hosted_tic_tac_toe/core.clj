@@ -3,7 +3,7 @@
             [hosted-tic-tac-toe.ttt-routes :as routes])
   (:gen-class))
 
-(import '(javaserver Router)
+(import '(javaserver Router Server)
         '(text_parsers ArgParser)
         '(factories ServerCreator))
 
