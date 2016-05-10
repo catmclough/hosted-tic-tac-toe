@@ -1,6 +1,8 @@
 (ns hosted-tic-tac-toe.gameboard-responder
   (:require [tictactoe.board :as board]
             [tictactoe.ai :as ai]
+            [hosted-tic-tac-toe.end-game-responder :as end-game-responder]
+            [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
             [hosted-tic-tac-toe.ttt-round :as round]
 			[hosted-tic-tac-toe.gameboard-html :as gameboard-view]))
 
@@ -29,7 +31,8 @@
 (defn- get-headers [gameboard]
   (if (board/game-over? gameboard)
     (let [redirect-header (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/REDIRECT)) (game-over-route gameboard))))]
-      (into-array Header [redirect-header]))
+      (let [set-cookie cookie-manager/set-cookie-header]
+        (into-array Header [redirect-header set-cookie])))
     (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) gameboard-view/content-type ";")))]
       (into-array Header [content-type]))))
 

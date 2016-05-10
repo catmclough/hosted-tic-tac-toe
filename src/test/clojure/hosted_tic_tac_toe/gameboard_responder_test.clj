@@ -1,6 +1,8 @@
 (ns hosted-tic-tac-toe.gameboard-responder-test
   (:require [clojure.test :refer :all]
             [hosted-tic-tac-toe.gameboard-responder :as gameboard-responder]
+            [hosted-tic-tac-toe.end-game-responder :as end-game-responder]
+            [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
             [hosted-tic-tac-toe.gameboard-html :as gameboard-view]
             [tictactoe.board :as board]
             ))
@@ -18,15 +20,22 @@
 
 (def request-with-error (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) "unrecognizable data"))))
 
-(def current-board-data "012345678")
+(def current-board-data "XX2O45O78")
 
-(def move-data (str "board=" current-board-data "&choice=0&marker=X"))
+(def regular-move-data (str "board=" current-board-data "&choice=5&marker=X"))
 
 (def valid-post-request
-  (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) move-data))))
+  (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) regular-move-data))))
 
 (def valid-post-request-response
   (.getResponse responder valid-post-request))
+
+(def valid-post-updated-board (gameboard-view/get-page ["X" "X" "O" "O" 4 "X" "O" 7 8]))
+
+(def game-ending-move-data (str "board=" current-board-data "&choice=2&marker=X"))
+
+(def game-ending-post-request
+  (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) game-ending-move-data))))
 
 (deftest gets-valid-response-status
   (is (= (.getStatusLine HTTPStatus/OK) (.getStatusLine get-request-response))))
@@ -34,11 +43,22 @@
 (deftest gets-unallowed-response-status
   (is (= (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED) (.getStatusLine (.getResponse responder unallowed-request)))))
 
+(deftest valid-post-response-code
+  (is (= (.getStatusLine HTTPStatus/OK) (.getStatusLine valid-post-request-response))))
+
 (deftest catches-exceptions-and-returns-response
   (is (= (.getStatusLine HTTPStatus/NOT_FOUND) (.getStatusLine (.getResponse responder request-with-error)))))
 
 (deftest response-has-content-type-header
   (is (= (.getLine (get (.getHeaders get-request-response) 0))
+         (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
+
+(deftest game-ending-response-has-set-cookie-header
+  (is (= (.getLine (get (.getHeaders (.getResponse responder game-ending-post-request)) 1))
+         (str "Set-Cookie: " cookie-manager/session-cookie))))
+
+(deftest post-response-html-header
+  (is (= (.getLine (get (.getHeaders valid-post-request-response) 0))
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
 
 (deftest valid-get-request-returns-html-template
@@ -51,15 +71,8 @@
 (deftest invalid-get-request-gets-empty-response-body
   (is (empty? (.getBody (.getResponse responder unallowed-request)))))
 
-(deftest valid-post-response-code
-  (is (= (.getStatusLine HTTPStatus/OK) (.getStatusLine valid-post-request-response))))
-
-(deftest post-response-html-header
-  (is (= (.getLine (get (.getHeaders valid-post-request-response) 0))
-         (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
-
 (deftest valid-user-post-updates-board-with-user-and-ai-choice
-  (is (true? (.contains (.getBody valid-post-request-response) (gameboard-view/get-page ["X" 1 2 3 "O" 5 6 7 8])))))
+  (is (true? (.contains (.getBody valid-post-request-response) valid-post-updated-board))))
 
 (deftest redirects-user-to-game-over-route-with-winner-params
   (let [winning-move (str "board=XX2O45O78&choice=2&marker=X")]
