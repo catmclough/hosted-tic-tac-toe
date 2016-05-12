@@ -2,9 +2,10 @@
   (:require
     [tictactoe.board :as board]
     [tictactoe.ai :as ai]
+    [tictactoe.setup :as ttt-setup]
     [hosted-tic-tac-toe.board-data-parser :as data-parser]))
 
-(def ai-marker "O")
+(def ai-marker ttt-setup/player-two)
 
 (defn- update-board [request-data]
   (let [choice (data-parser/get-spot-choice request-data)]

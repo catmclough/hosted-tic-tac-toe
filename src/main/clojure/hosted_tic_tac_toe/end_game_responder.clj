@@ -16,17 +16,18 @@
   (let [cookie-data (.getHeaderData request "Cookie")]
     (if (nil? cookie-data)
       false
-      (if (= cookie-data cookie-manager/session-cookie)
+      (if (.contains cookie-data (cookie-manager/get-session-id))
         true
         false))))
 
 (defn get-response-headers []
   (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) end-game-view/content-type ";")))]
-    (into-array Header [content-type])))
+    (into-array Header [content-type cookie-manager/remove-cookies-header])))
 
 (defn- get-winner-from-params [request]
-  (let [winner ((clojure.string/split (get (ParameterParser/getDecodedParams (str (.getMethod request) " " (.getURI request))) 0) #"= ") 1)]
-      winner))
+  (let [request-line (str (.getMethod request) " " (.getURI request))]
+    (let [winner ((clojure.string/split (first (ParameterParser/getDecodedParams request-line)) #"= ") 1)]
+      winner)))
 
 (defn get-response-body [request]
   (end-game-view/get-page (get-winner-from-params request)))
@@ -43,4 +44,5 @@
 (defn new-end-game-responder []
   (reify
     Responder
-      (getResponse [this request] (get-game-over-response request))))
+      (getResponse [this request]
+        (get-game-over-response request))))

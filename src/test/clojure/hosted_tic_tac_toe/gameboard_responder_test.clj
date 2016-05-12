@@ -50,16 +50,19 @@
   (is (= (.getStatusLine HTTPStatus/NOT_FOUND) (.getStatusLine (.getResponse responder request-with-error)))))
 
 (deftest response-has-content-type-header
-  (is (= (.getLine (get (.getHeaders get-request-response) 0))
+  (is (= (.getLine (first (.getHeaders get-request-response)))
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
-
-(deftest game-ending-response-has-set-cookie-header
-  (is (= (.getLine (get (.getHeaders (.getResponse responder game-ending-post-request)) 1))
-         (str "Set-Cookie: " cookie-manager/session-cookie))))
 
 (deftest post-response-html-header
-  (is (= (.getLine (get (.getHeaders valid-post-request-response) 0))
+  (is (= (.getLine (first (.getHeaders valid-post-request-response)))
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
+
+(deftest non-game-ending-move-deletes-cookies
+  (is (= (.getLine (second (.getHeaders valid-post-request-response))) (.getLine cookie-manager/remove-cookies-header))))
+
+(deftest game-ending-response-has-set-cookie-header
+  (is (= (.getLine (second (.getHeaders (.getResponse responder game-ending-post-request))))
+         (str "Set-Cookie: " (cookie-manager/get-session-id)))))
 
 (deftest valid-get-request-returns-html-template
   (is (true? (and (.contains (.getBody get-request-response) (HTMLContent/openHTMLAndBody gameboard-view/page-name))
@@ -77,11 +80,11 @@
 (deftest redirects-user-to-game-over-route-with-winner-params
   (let [winning-move (str "board=XX2O45O78&choice=2&marker=X")]
     (let [end-game-request (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) winning-move)))]
-      (is (= (.getLine (get (.getHeaders (.getResponse responder end-game-request)) 0))
+      (is (= (.getLine (first (.getHeaders (.getResponse responder end-game-request))))
          (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode "?winner=X" "UTF-8")))))))
 
 (deftest winner-param-is-nil-if-game-was-tie
   (let [tying-move (str "board=OXO3XOXOX&choice=3&marker=X")]
     (let [tie-game-request (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) tying-move)))]
-      (is (= (.getLine (get (.getHeaders (.getResponse responder tie-game-request)) 0))
+      (is (= (.getLine (first (.getHeaders (.getResponse responder tie-game-request))))
              (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode "?winner=nil" "UTF-8")))))))
