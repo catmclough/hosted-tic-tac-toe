@@ -4,7 +4,7 @@
             [hosted-tic-tac-toe.end-game-responder :as end-game-responder]
             [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
             [hosted-tic-tac-toe.ttt-round :as round]
-			[hosted-tic-tac-toe.gameboard-html :as gameboard-view]))
+			[hosted-tic-tac-toe.gameboard-view :as gameboard-view]))
 
 (import '(responders Responder)
         '(http_messages HTTPStatus Request

@@ -1,9 +1,8 @@
-(ns hosted-tic-tac-toe.gameboard-html
-  (require [tictactoe.board :as board]))
+(ns hosted-tic-tac-toe.gameboard-view
+  (require [tictactoe.board :as board]
+           [hosted-tic-tac-toe.copy-en-us :as copy]))
 
 (import '(http_messages HTMLContent))
-
-(def page-name "Game Board")
 
 (def content-type "text/html")
 
@@ -48,6 +47,6 @@
 
 (defn get-page [board]
   (str
-    (HTMLContent/openHTMLAndBody page-name)
+    (HTMLContent/openHTMLAndBody copy/gameboard-page-name)
     (get-ttt-board board)
     (HTMLContent/closeBodyAndHTML)))

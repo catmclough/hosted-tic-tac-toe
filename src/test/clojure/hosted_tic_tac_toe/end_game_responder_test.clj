@@ -2,7 +2,7 @@
   (require [clojure.test :refer :all]
            [hosted-tic-tac-toe.end-game-responder :as responder]
            [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
-           [hosted-tic-tac-toe.end-game-html :as end-game-view]))
+           [hosted-tic-tac-toe.end-game-view :as end-game-view]))
 
 (import '(http_messages Request$RequestBuilder HTTPStatus ResponseHeader Request)
         '(java.net URLEncoder))
@@ -40,6 +40,12 @@
   (with-redefs [responder/request-has-session-cookie (fn [request] true)]
     (is (= (.getLine (second (.getHeaders (.getResponse end-game-responder end-game-request))))
            (.getLine cookie-manager/remove-cookies-header)))))
+
+(deftest response-changes-session-id-to-prevent-user-from-reusing-cookie
+  (with-redefs [responder/request-has-session-cookie (fn [request] true)]
+    (let [first-session-id (cookie-manager/get-session-id)]
+      (.getResponse end-game-responder end-game-request)
+      (is (not (= first-session-id (cookie-manager/get-session-id)))))))
 
 (deftest end-game-response-has-end-game-view
   (with-redefs [responder/request-has-session-cookie (fn [request] true)]

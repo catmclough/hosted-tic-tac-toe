@@ -3,7 +3,8 @@
             [hosted-tic-tac-toe.gameboard-responder :as gameboard-responder]
             [hosted-tic-tac-toe.end-game-responder :as end-game-responder]
             [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
-            [hosted-tic-tac-toe.gameboard-html :as gameboard-view]
+            [hosted-tic-tac-toe.gameboard-view :as gameboard-view]
+            [hosted-tic-tac-toe.copy-en-us :as copy]
             [tictactoe.board :as board]
             ))
 
@@ -65,7 +66,7 @@
          (str "Set-Cookie: " (cookie-manager/get-session-id)))))
 
 (deftest valid-get-request-returns-html-template
-  (is (true? (and (.contains (.getBody get-request-response) (HTMLContent/openHTMLAndBody gameboard-view/page-name))
+  (is (true? (and (.contains (.getBody get-request-response) (HTMLContent/openHTMLAndBody copy/gameboard-page-name))
                   (.contains (.getBody get-request-response) (HTMLContent/closeBodyAndHTML))))))
 
 (deftest get-gameboard-returns-empty-board
