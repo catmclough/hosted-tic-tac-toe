@@ -15,10 +15,15 @@
     <input type=\"submit\" value=\"New Game\" />
    </form>")
 
-(defn get-page [winner]
+(defn get-game-over-page [winner]
   (str (HTMLContent/openHTMLAndBody copy/game-over-page-title)
        (winner-info winner)
        new-game-button
        (HTMLContent/closeBodyAndHTML)))
 
+(def get-user-cannot-win-page
+  (str (HTMLContent/openHTMLAndBody copy/game-over-page-title)
+       copy/illegal-action-message
+       new-game-button
+       (HTMLContent/closeBodyAndHTML)))
 

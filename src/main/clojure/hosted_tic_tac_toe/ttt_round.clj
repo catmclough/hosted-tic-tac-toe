@@ -5,6 +5,8 @@
     [tictactoe.setup :as ttt-setup]
     [hosted-tic-tac-toe.board-data-parser :as data-parser]))
 
+(def user-marker ttt-setup/player-one)
+
 (def ai-marker ttt-setup/player-two)
 
 (defn- update-board [request-data]

@@ -2,7 +2,6 @@
   (:require [clojure.test :refer :all]
             [hosted-tic-tac-toe.gameboard-responder :as gameboard-responder]
             [hosted-tic-tac-toe.end-game-responder :as end-game-responder]
-            [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
             [hosted-tic-tac-toe.gameboard-view :as gameboard-view]
             [hosted-tic-tac-toe.copy-en-us :as copy]
             [tictactoe.board :as board]
@@ -10,6 +9,10 @@
 
 (import '(http_messages Response Request Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent)
         '(java.net URLEncoder))
+
+(def ai-marker "O")
+
+(def user-marker "X")
 
 (def responder (gameboard-responder/new-gameboard-responder))
 
@@ -58,13 +61,6 @@
   (is (= (.getLine (first (.getHeaders valid-post-request-response)))
          (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
 
-(deftest non-game-ending-move-deletes-cookies
-  (is (= (.getLine (second (.getHeaders valid-post-request-response))) (.getLine cookie-manager/remove-cookies-header))))
-
-(deftest game-ending-response-has-set-cookie-header
-  (is (= (.getLine (second (.getHeaders (.getResponse responder game-ending-post-request))))
-         (str "Set-Cookie: " (cookie-manager/get-session-id)))))
-
 (deftest valid-get-request-returns-html-template
   (is (true? (and (.contains (.getBody get-request-response) (HTMLContent/openHTMLAndBody copy/gameboard-page-name))
                   (.contains (.getBody get-request-response) (HTMLContent/closeBodyAndHTML))))))
@@ -78,14 +74,14 @@
 (deftest valid-user-post-updates-board-with-user-and-ai-choice
   (is (true? (.contains (.getBody valid-post-request-response) valid-post-updated-board))))
 
-(deftest redirects-user-to-game-over-route-with-winner-params
-  (let [winning-move (str "board=XX2O45O78&choice=2&marker=X")]
+(deftest redirects-user-to-game-over-route-with-valid-winner-params
+  (let [winning-move (str "board=OO2X4XX78&choice=2&marker=" ai-marker)]
     (let [end-game-request (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) winning-move)))]
       (is (= (.getLine (first (.getHeaders (.getResponse responder end-game-request))))
-         (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode "?winner=X" "UTF-8")))))))
+         (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode (str "?winner=" ai-marker) "UTF-8")))))))
 
 (deftest winner-param-is-nil-if-game-was-tie
-  (let [tying-move (str "board=OXO3XOXOX&choice=3&marker=X")]
+  (let [tying-move (str "board=OXO3XOXOX&choice=3&marker=" ai-marker)]
     (let [tie-game-request (.build (Request$RequestBuilder. (str "POST /gameboard" (Request/newLine) (Request/newLine) tying-move)))]
       (is (= (.getLine (first (.getHeaders (.getResponse responder tie-game-request))))
              (str (.getKeyword ResponseHeader/REDIRECT) "/game-over" (URLEncoder/encode "?winner=nil" "UTF-8")))))))
