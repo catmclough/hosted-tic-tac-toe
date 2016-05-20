@@ -1,29 +1,57 @@
 (ns hosted-tic-tac-toe.end-game-responder-test
   (require [clojure.test :refer :all]
            [hosted-tic-tac-toe.end-game-responder :as responder]
-           [hosted-tic-tac-toe.end-game-html :as html]))
+           [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
+           [hosted-tic-tac-toe.end-game-view :as end-game-view]))
 
-(import '(http_messages Request$RequestBuilder HTTPStatus ResponseHeader HTMLContent Request)
+(import '(http_messages Request$RequestBuilder HTTPStatus ResponseHeader Request)
         '(java.net URLEncoder))
 
 (def end-game-responder (responder/new-end-game-responder))
 
-(def x-winner-end-game-request (.build (Request$RequestBuilder. (str "GET /game-over?" (URLEncoder/encode "winner=X")))))
+(def end-game-request
+  (.build (Request$RequestBuilder. (str "GET /game-over" (URLEncoder/encode "?winner=X" "UTF-8")))))
 
-(def unallowed-request (.build (Request$RequestBuilder. "POST /game-over")))
+(def unallowed-request (.build (Request$RequestBuilder. (str "POST /game-over"))))
+
+(def request-that-throws-error (.build (Request$RequestBuilder. "GET /game-over?winner=")))
 
 (deftest valid-end-game-response-status
-  (is (= (.getStatusLine (.getResponse end-game-responder x-winner-end-game-request)) (.getStatusLine HTTPStatus/OK))))
+  (with-redefs [responder/request-has-session-cookie (fn [request] true)]
+    (is (= (.getStatusLine (.getResponse end-game-responder end-game-request)) (.getStatusLine HTTPStatus/OK)))))
 
-(deftest invalid-end-game-response-status
-    (is (= (.getStatusLine (.getResponse end-game-responder unallowed-request)) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED))))
+(deftest invalid-method-response-status
+  (is (= (.getStatusLine (.getResponse end-game-responder unallowed-request)) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED))))
 
-(deftest end-game-response-has-html-content-header
-  (is (= (.getLine (get (.getHeaders (.getResponse end-game-responder x-winner-end-game-request)) 0))
-         (str (.getKeyword ResponseHeader/CONTENT_TYPE) (HTMLContent/contentType) ";"))))
+(deftest request-without-cookie-gets-method-not-allowed-status
+  (with-redefs [responder/request-has-session-cookie (fn [request] false)]
+    (is (= (.getStatusLine (.getResponse end-game-responder end-game-request)) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))))
 
-(deftest end-game-response-has-end-game-html
-  (is (= (.getBody (.getResponse end-game-responder x-winner-end-game-request)) (html/get-page "X"))))
+(deftest catches-errors-and-responds
+  (with-redefs [responder/request-has-session-cookie (fn [request] true)]
+  (is (= (.getStatusLine (.getResponse end-game-responder request-that-throws-error)) (.getStatusLine HTTPStatus/NOT_FOUND)))))
 
-(deftest unallowed-end-game-response-has-empty-body
-  (is (empty? (.getBody (.getResponse end-game-responder unallowed-request)))))
+(deftest end-game-response-has-content-type-header
+  (with-redefs [responder/request-has-session-cookie (fn [request] true)]
+    (is (= (.getLine (first (.getHeaders (.getResponse end-game-responder end-game-request))))
+           (str (.getKeyword ResponseHeader/CONTENT_TYPE) end-game-view/content-type ";")))))
+
+(deftest response-deletes-cookies-to-prevent-page-reload-with-different-params
+  (with-redefs [responder/request-has-session-cookie (fn [request] true)]
+    (is (= (.getLine (second (.getHeaders (.getResponse end-game-responder end-game-request))))
+           (.getLine cookie-manager/remove-cookies-header)))))
+
+(deftest response-changes-session-id-to-prevent-user-from-reusing-cookie
+  (with-redefs [responder/request-has-session-cookie (fn [request] true)]
+    (let [first-session-id (cookie-manager/get-session-id)]
+      (.getResponse end-game-responder end-game-request)
+      (is (not (= first-session-id (cookie-manager/get-session-id)))))))
+
+(deftest end-game-response-has-end-game-view
+  (with-redefs [responder/request-has-session-cookie (fn [request] true)]
+    (is (= (.getBody (.getResponse end-game-responder end-game-request)) (end-game-view/get-page "X")))))
+
+(deftest request-without-cookie-does-not-display-a-winner
+  (with-redefs [responder/request-has-session-cookie (fn [request] false)]
+    (is (false? (.contains (.getBody (.getResponse end-game-responder end-game-request)) (end-game-view/get-page "X"))))))
+

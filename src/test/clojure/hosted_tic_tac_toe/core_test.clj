@@ -1,10 +1,11 @@
 (ns hosted-tic-tac-toe.core-test
   (:require [clojure.test :refer :all]
             [hosted-tic-tac-toe.core :refer :all]
-            [hosted-tic-tac-toe.ttt-routes :as ttt-routes]))
+            [hosted-tic-tac-toe.ttt-router :as ttt-router]))
 
 (import '(http_messages Request$RequestBuilder)
-        '(javaserver Server))
+        '(javaserver Server)
+        '(routers Router))
 
 (defn stub-output [f]
   (with-out-str
@@ -13,8 +14,6 @@
 (use-fixtures :once stub-output)
 
 (def mock-server (atom {:port nil}))
-
-(def mock-router (atom {:port nil}))
 
 (defn update-atom [atom-object new-data]
   (swap! atom-object
@@ -37,7 +36,6 @@
   (-main)
   (is (= (:port @mock-server) 5000)))
 
-(deftest creates-router-with-ttt-routes
-  (with-redefs [get-router (fn [app-routes] (update-atom mock-router {:routes app-routes}))]
-    (-main)
-    (is (= (keys (:routes @mock-router)) (keys (ttt-routes/get-routes))))))
+(deftest creates-router-with-ttt-routes-and-responders
+  (-main)
+  (is (= (= java.util.HashMap (type (.getRoutesAndResponders (get-ttt-router)))))))

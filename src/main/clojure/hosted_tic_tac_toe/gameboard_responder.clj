@@ -1,10 +1,13 @@
 (ns hosted-tic-tac-toe.gameboard-responder
   (:require [tictactoe.board :as board]
-			[hosted-tic-tac-toe.gameboard-html :as gameboard-html]
-            [hosted-tic-tac-toe.board-data-parser :as data-parser]))
+            [tictactoe.ai :as ai]
+            [hosted-tic-tac-toe.end-game-responder :as end-game-responder]
+            [hosted-tic-tac-toe.cookie-manager :as cookie-manager]
+            [hosted-tic-tac-toe.ttt-round :as round]
+			[hosted-tic-tac-toe.gameboard-view :as gameboard-view]))
 
 (import '(responders Responder)
-        '(http_messages HTTPStatus HTMLContent Request
+        '(http_messages HTTPStatus Request
                         Response$ResponseBuilder Header$HeaderBuilder
                         Header ResponseHeader)
         '(java.net URLEncoder))
@@ -28,33 +31,24 @@
 (defn- get-headers [gameboard]
   (if (board/game-over? gameboard)
     (let [redirect-header (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/REDIRECT)) (game-over-route gameboard))))]
-        (into-array Header [redirect-header]))
-    (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) (HTMLContent/contentType) ";")))]
-      (into-array Header [content-type]))))
-
-(defn- get-board-data [request]
-  (let [board (.getData request)]
-      board))
-
-(defn- update-board [request-data]
-  (let [choice (data-parser/get-spot-choice request-data)]
-    (let [marker (data-parser/get-player-marker request-data)]
-      (let [current-board (data-parser/get-board request-data)]
-        (board/fill-space choice marker current-board)))))
+      (into-array Header [redirect-header (cookie-manager/get-set-cookie-header)]))
+    (let [content-type (.build (Header$HeaderBuilder. (str (.getKeyword (ResponseHeader/CONTENT_TYPE)) gameboard-view/content-type ";")))]
+      (into-array Header [content-type cookie-manager/remove-cookies-header]))))
 
 (defn- get-board [request]
   (cond
-    (= (.getMethod request) "GET")
-      (board/make-board)
-    (= (.getMethod request) "POST")
-      (update-board (.getData request))))
+    (= (.getMethod request) "GET") (board/make-board)
+    (= (.getMethod request) "POST") (round/play-round request)))
 
 (defn- get-board-response [request]
-  (if (not (request-is-supported request))
-    (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))
-    (let [gameboard (get-board request)]
-      (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
-        (get-status-line gameboard)) (get-headers gameboard)) (gameboard-html/get-page gameboard))))))
+  (try
+    (if (not (request-is-supported request))
+      (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine HTTPStatus/METHOD_NOT_ALLOWED)))
+      (let [gameboard (get-board request)]
+        (.build (.body (.headers (.statusLine (Response$ResponseBuilder.)
+          (get-status-line gameboard)) (get-headers gameboard)) (gameboard-view/get-page gameboard)))))
+    (catch Exception e
+      (.build (.statusLine (Response$ResponseBuilder.) (.getStatusLine (HTTPStatus/NOT_FOUND)))))))
 
 (defn new-gameboard-responder []
   (reify

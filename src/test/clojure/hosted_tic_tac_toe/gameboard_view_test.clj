@@ -1,6 +1,6 @@
-(ns hosted-tic-tac-toe.gameboard-html-test
+(ns hosted-tic-tac-toe.gameboard-view-test
   (:require [clojure.test :refer :all]
-            [hosted-tic-tac-toe.gameboard-html :refer :all]))
+            [hosted-tic-tac-toe.gameboard-view :refer :all]))
 
 (def gameboard [0 "X" 2 "O" 4 5 6 7 8])
 
