@@ -4,11 +4,11 @@
 
 ## Dependencies
 
-- [Clojure Tic-Tac-Toe] (https://github.com/catmclough/clojure-tictactoe) (on [Clojars] (https://clojars.org/speclj_ttt))
-- [Java Server] (https://github.com/catmclough/java-http-server) (included in this repo)
-- [Clojure 1.8.0] (http://clojure.org/community/downloads)
+- [Clojure Tic-Tac-Toe Jar](https://github.com/catmclough/clojure-tictactoe) (on [Clojars] (https://clojars.org/speclj_ttt))
+- [Java Server Project](https://github.com/catmclough/java-http-server) (included in this repo)
+- [Clojure 1.8.0](http://clojure.org/community/downloads)
 - Java 8
-- [Leiningen] (http://leiningen.org/)
+- [Leiningen](http://leiningen.org/)
 
 ## Usage
 
@@ -20,7 +20,7 @@ Then run the program.
 
     $ lein run
 
-##Options
+## Options
 
 You may specify any port on which you'd like to run the server using the -D flag (the default port is 5000).
 
